@@ -129,7 +129,20 @@ public class Gui extends MainGui implements View {
     private static final long serialVersionUID=1L;
     Tablet tablet;
     /*final*/ GuiAdapterABC adapter;
-    final Map<Integer,Color> idToColor=Tablet.defaultIdToColor;
+    final Map<Integer,Color> idToColor=defaultIdToColor;
     Map<Integer,JToggleButton> idToButton=new LinkedHashMap<>();
+    public static final Map<Integer,Color> defaultIdToColor;
+    static { // this belongs in group! - maybe not, it's gui stuff? maybe tablet
+        Map<Integer,Color> temp=new LinkedHashMap<>();
+        temp.put(1,Color.red);
+        temp.put(2,Color.orange);
+        temp.put(3,Color.yellow);
+        temp.put(4,Color.green);
+        temp.put(5,Color.blue);
+        temp.put(6,Color.magenta);
+        temp.put(7,Color.cyan);
+        defaultIdToColor=Collections.unmodifiableMap(temp);
+    }
+
     TextView textView;
 }

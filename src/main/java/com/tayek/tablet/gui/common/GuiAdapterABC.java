@@ -6,6 +6,7 @@ public abstract class GuiAdapterABC implements GuiAdapter,Observer {
     public GuiAdapterABC(Model model) {
         this.model=model;
     }
+    // old, can we remove this and make it abstract?
     @Override public void update(Observable o,Object hint) {
         // sets state and text for all of the buttons widgets
         for(int buttonId=1;buttonId<=model.buttons;buttonId++) {

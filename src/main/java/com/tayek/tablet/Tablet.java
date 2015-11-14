@@ -1,12 +1,10 @@
 package com.tayek.tablet;
-import java.awt.Color;
 import java.io.IOException;
 import java.net.*;
 import java.util.*;
 import java.util.logging.Logger;
 import com.tayek.tablet.model.*;
 import com.tayek.tablet.model.Message.*;
-import com.tayek.utilities.*;
 // http://www.instructables.com/id/How-To-Setup-Eclipse-for-Android-App-Development/step9/Access-ADT-Plugin-Preferences/
 public class Tablet {
     public Tablet(Group group,int tabletId) {
@@ -72,18 +70,6 @@ public class Tablet {
     public final Group group;
     public final Integer tabletId;
     Server server;
-    public static final Map<Integer,Color> defaultIdToColor;
-    static { // this belongs in group! - maybe not, it's gui stuff? maybe tablet
-        Map<Integer,Color> temp=new LinkedHashMap<>();
-        temp.put(1,Color.red);
-        temp.put(2,Color.orange);
-        temp.put(3,Color.yellow);
-        temp.put(4,Color.green);
-        temp.put(5,Color.blue);
-        temp.put(6,Color.magenta);
-        temp.put(7,Color.cyan);
-        defaultIdToColor=Collections.unmodifiableMap(temp);
-    }
     public final Logger logger=Logger.getLogger(getClass().getName());
     public static final Set<Class<?>> loggers=new LinkedHashSet<>();
     static {
