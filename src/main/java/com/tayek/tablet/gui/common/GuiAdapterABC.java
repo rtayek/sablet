@@ -7,14 +7,15 @@ public abstract class GuiAdapterABC implements GuiAdapter,Observer {
         this.model=model;
     }
     @Override public void update(Observable o,Object hint) {
+        // sets state and text for all of the buttons widgets
         for(int buttonId=1;buttonId<=model.buttons;buttonId++) {
-            setState(buttonId,model.state(buttonId));
+            setButtonState(buttonId,model.state(buttonId));
             if(model.state(buttonId).equals(true)) {
                 Integer lastOnFrom=model.idToLastOnFrom.get(buttonId);
                 if(lastOnFrom==null) {
-                    setText(buttonId,pad("Room "+buttonId));
-                } else setText(buttonId,pad("Room "+buttonId+ "(from: "+model.idToLastOnFrom.get(buttonId))+")");
-            } else setText(buttonId,pad("Room "+buttonId));
+                    setButtonText(buttonId,pad("Room "+buttonId));
+                } else setButtonText(buttonId,pad("Room "+buttonId+ "(from: "+model.idToLastOnFrom.get(buttonId))+")");
+            } else setButtonText(buttonId,pad("Room "+buttonId));
         }
     }
     static int length=20;

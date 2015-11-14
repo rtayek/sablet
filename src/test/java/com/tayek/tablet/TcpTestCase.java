@@ -11,8 +11,7 @@ import com.tayek.tablet.model.Message.Receiver.*;
 import com.tayek.utilities.LoggingHandler;
 public class TcpTestCase {
     @BeforeClass public static void setUpBeforeClass() throws Exception {
-        TabletLoggingHandler.init();
-        LoggingHandler.setLevel(Level.OFF);
+        Main.log.setLevel(Level.OFF);
     }
     @AfterClass public static void tearDownAfterClass() throws Exception {}
     @Before public void setUp() throws Exception {}
@@ -21,9 +20,9 @@ public class TcpTestCase {
         sendAndReceiveOneMessage(12345);
     }
     @Test public void testManyTimes() throws Exception {
-        for(int i=1;i<=1000000;i++) {
+        for(int i=1;i<=100_000;i++) {
             // System.out.println(i);
-            if(!(sendAndReceiveOneMessage(20000+i))) fail("failed at: "+i);
+            if(!(sendAndReceiveOneMessage(20_000+i))) fail("failed at: "+i);
             Thread.sleep(10);
             if(i%100==0)
                 System.out.println(i);

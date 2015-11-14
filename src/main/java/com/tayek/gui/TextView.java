@@ -8,6 +8,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
+import com.tayek.utilities.Tee;
 @SuppressWarnings("serial") public class TextView extends JPanel {
     public TextView(String prefix) {
         taOutputStream=new TextAreaOutputStream(textArea,prefix);
@@ -25,6 +26,17 @@ import javax.swing.SwingUtilities;
         textView.frame=frame;
         return textView;
     }
+    public static TextView addTextView(String prefix) {
+        Tee tee=new Tee(System.out);
+        TextView textView=TextView.createAndShowGui(prefix);
+        tee.addOutputStream(textView.taOutputStream);
+        PrintStream printStream=new PrintStream(tee,true);
+        System.setOut(printStream);
+        System.setErr(printStream);
+        System.out.println(""+" "+"tee'd");
+        return textView;
+    }
+
     public static void main(String[] args) {
         SwingUtilities.invokeLater(new Runnable() {
             @Override public void run() {

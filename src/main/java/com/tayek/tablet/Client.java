@@ -27,7 +27,7 @@ class Client {
         });
     }
     public boolean sendOnThread(Message message) throws InterruptedException,ExecutionException {
-        Future<Boolean> future=sendFuture(message);
+        Future<Boolean> future=sendFuture(message); // not used yet
         while(!future.isDone())
             ;
         boolean ok=future.get();
@@ -44,7 +44,8 @@ class Client {
                 socket.shutdownInput();
                 socket.shutdownOutput();
                 socket.close();
-                logger.fine("send worked!");
+                logger.fine("sent: "+message+" at: "+System.currentTimeMillis());
+                Main.toaster.toast("sent: "+message+" at: "+System.currentTimeMillis());
                 return true;
             } catch(IOException e) {
                 e.printStackTrace();
@@ -89,14 +90,14 @@ class Client {
     public static void printThreads() {
         int big=2*Thread.activeCount();
         Thread[] threads=new Thread[big];
-        int n=Thread.enumerate(threads);
+        Thread.enumerate(threads);
         for(Thread thread:threads)
             if(thread!=null) System.out.println(thread);
     }
     final SocketAddress socketAddress;
     final int timeout;
     static Integer service0=10_000;
-    static Integer defaultTimeout=0;
+    static Integer defaultTimeout=200;
     public final Logger logger=Logger.getLogger(getClass().getName());
     public static final Logger staticLogger=Logger.getLogger(Client.class.getName());
 }

@@ -1,8 +1,7 @@
 package com.tayek.tablet.model;
 import java.util.*;
 import java.util.logging.Logger;
-import com.tayek.tablet.Group;
-//import com.tayek.audio.Audio.Sound;
+import com.tayek.audio.Audio.Sound;
 import com.tayek.tablet.model.Message.*;
 public class Model extends Observable implements Receiver<Message>,Cloneable {
     public Model(int buttons) {
@@ -22,6 +21,7 @@ public class Model extends Observable implements Receiver<Message>,Cloneable {
         }
     }
     public void setChangedAndNotify(Object object) {
+        System.out.println(countObservers());
         setChanged();
         notifyObservers(object);
     }
@@ -48,10 +48,9 @@ public class Model extends Observable implements Receiver<Message>,Cloneable {
                             // new hint should be state changed
                             // (boolean,who)
                            // Hint hint=new Hint(message);
-                            
-                            // put the sound back in!
-                            //int n=random.nextInt(Sound.values().length);
-                           // setChangedAndNotify(Sound.values()[n]);
+                            int n=random.nextInt(Sound.values().length);
+                            System.out.println(Sound.values()[n]);
+                            setChangedAndNotify(Sound.values()[n]);
                         } else logger.finest("no change");
                     }
                     setState(message.button,message.state);

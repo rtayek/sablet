@@ -10,9 +10,9 @@ class Server extends Thread {
         this(new InetSocketAddress(inetAddress,service),receiver);
     }
     Server(SocketAddress socketAddress,Receiver<Message> receiver) throws IOException {
-        super("server:"+socketAddress);
-        logger.info("binding to: "+socketAddress);
+        //super("server:"+socketAddress);
         serverSocket=new ServerSocket();
+        logger.info("binding to: "+socketAddress);
         serverSocket.bind(socketAddress);
         this.receiver=receiver;
     }
@@ -23,6 +23,8 @@ class Server extends Thread {
                 logger.info("server is accepting on: "+serverSocket);
                 Socket socket=serverSocket.accept();
                 logger.info("server accepted connection from: "+socket.getRemoteSocketAddress());
+                Main.toaster.toast("server accepted connection from: "+socket.getRemoteSocketAddress());
+
                 BufferedReader in=new BufferedReader(new InputStreamReader(socket.getInputStream()));
                 String string=in.readLine();
                 if(string!=null&&!string.isEmpty()) {
@@ -30,7 +32,8 @@ class Server extends Thread {
                         received++;
                     }
                     Message message=Message.from(string);
-                    logger.fine("received: "+message);
+                    logger.fine("received: "+message+" at: "+System.currentTimeMillis());
+                    Main.toaster.toast("received: "+message+" at: "+System.currentTimeMillis());
                     if(receiver!=null) receiver.receive(message);
                 }
                 socket.shutdownInput();

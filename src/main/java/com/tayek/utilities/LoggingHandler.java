@@ -56,10 +56,6 @@ public class LoggingHandler extends Formatter {
         }
         return map;
     }
-    public static void setLevel(Level level) {
-        for(Logger logger:Tablet.map.values())
-            logger.setLevel(level);
-    }
     public static long t0=0;
     static final Level levels[]= {Level.SEVERE,Level.WARNING,Level.INFO,Level.CONFIG,Level.FINE,Level.FINER,Level.FINEST};
     static final Integer maxThreadNameLength=10;

@@ -4,7 +4,6 @@ import java.net.*;
 import java.util.*;
 import java.util.logging.Logger;
 import com.tayek.tablet.*;
-import com.tayek.tablet.model.Message.Receiver;
 public class Message implements java.io.Serializable {
     public enum Type {
         normal,startup,hello,goodbye;

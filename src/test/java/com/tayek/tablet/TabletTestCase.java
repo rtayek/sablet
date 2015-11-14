@@ -8,18 +8,17 @@ import com.tayek.tablet.model.Message;
 import com.tayek.utilities.LoggingHandler;
 public class TabletTestCase {
     @BeforeClass public static void setUpBeforeClass() throws Exception {
-        TabletLoggingHandler.init();
-        LoggingHandler.setLevel(Level.OFF);
+        Main.log.setLevel(Level.OFF);
     }
     @AfterClass public static void tearDownAfterClass() throws Exception {}
     @Before public void setUp() throws Exception {}
     @After public void tearDown() throws Exception {}
     @Test public void test() throws InterruptedException,UnknownHostException {
-        Group group=new Group(1,Group.tabletsTwoOnLinksys42);
+        Group group=new Group(1,Group.tabletsTwo);
         Tablet tablet=new Tablet(group,1);
-        tablet.start();
+        tablet.startListening();
         Tablet tablet2=new Tablet(group,2);
-        tablet2.start();
+        tablet2.startListening();
         InetAddress inetAddress=InetAddress.getLocalHost();
         Message message=Message.start(group,3);
         // Client client=new Client(inetAddress,Server.port(1));
@@ -34,7 +33,7 @@ public class TabletTestCase {
         Thread.sleep(200);
         System.out.println(tablet.server.received());
         System.out.println(tablet2.server.received());
-        tablet.stop();
-        tablet2.stop();
+        tablet.stopListening();
+        tablet2.stopListening();
     }
 }

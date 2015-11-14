@@ -26,10 +26,10 @@ public enum TabletMenuItem {
                 tablet.broadcast(message);
                 break;
             case Disconnect:
-                tablet.stop();
+                tablet.stopListening();
                 break;
             case Connect:
-                tablet.start();
+                tablet.startListening();
                 break;
             case Log:
                 // gui.textView.setVisible(!gui.textView.isVisible());

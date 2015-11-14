@@ -6,8 +6,7 @@ import com.tayek.tablet.model.Message.Type;
 import com.tayek.utilities.LoggingHandler;
 public class Run {
     public static void main(String[] args) throws InterruptedException {
-        TabletLoggingHandler.init();
-        LoggingHandler.setLevel(Level.WARNING);
+        Main.log.setLevel(Level.WARNING);
         Map<Integer,String> map=new TreeMap<>();
         for(int i=1;i<=20;i++)
             map.put(i,"192.168.1.2");
@@ -20,7 +19,7 @@ public class Run {
         System.out.println(tablets);
         System.out.println("start");
         for(Tablet tablet:tablets.values()) {
-            tablet.start();
+            tablet.startListening();
             Thread.yield();
         }
         System.out.println("broadcast");
@@ -40,7 +39,7 @@ public class Run {
         for(Tablet tablet:tablets.values()) {
             //System.out.println(tablet.server.received());
             if(tablet.server.received()!=map.size()-1) System.out.println(tablet+" received: "+tablet.server.received()+" instead of "+(map.size()-1));
-            tablet.stop();
+            tablet.stopListening();
         }
         for(Tablet tablet:tablets.values()) {
             tablet.server.join();

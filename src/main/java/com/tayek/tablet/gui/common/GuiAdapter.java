@@ -1,5 +1,5 @@
 package com.tayek.tablet.gui.common;
 public interface GuiAdapter {
-    void setState(int id,boolean state);
-    void setText(int id,String string);
+    void setButtonState(int id,boolean state); // of the widget!
+    void setButtonText(int id,String string);  // of the widget!
 }
