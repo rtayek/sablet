@@ -3,8 +3,8 @@ import java.util.*;
 import com.tayek.tablet.Group;
 import com.tayek.tablet.model.Model;
 public interface View extends Observer {
-    public class CommandLineView implements View {
-        public CommandLineView(Model model) {
+    public class CommandLine implements View {
+        public CommandLine(Model model) {
             this.model=model;
         }
         @Override public void update(Observable observable,Object hint) {

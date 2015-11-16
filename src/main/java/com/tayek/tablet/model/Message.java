@@ -1,12 +1,12 @@
 package com.tayek.tablet.model;
-import java.io.IOException;
 import java.net.*;
 import java.util.*;
 import java.util.logging.Logger;
+import com.tayek.*;
 import com.tayek.tablet.*;
-public class Message implements java.io.Serializable {
+public class Message implements From<Message>, java.io.Serializable {
     public enum Type {
-        normal,startup,hello,goodbye;
+        normal,dummy;
         public boolean isNormal() {
             return this.equals(normal);
         }
@@ -14,23 +14,11 @@ public class Message implements java.io.Serializable {
             return !this.equals(normal);
         }
     }
-    public static Message start(Group group,int from) {
-        return new Message(group,from,Type.startup,0);
-    }
-    public Message(Tablet tablet,Type type,int extra) {
-        this(tablet.group,tablet.tabletId,type,extra);
-    }
-    public Message(Group group,int from,Type type,int extra) {
-        this(group.groupId,from,type,extra);
-    }
     public Message(Integer groupId,int from,Type type,int extra) {
         this(groupId,from,type,extra,false);
     }
-    public Message(Tablet tablet,Type type,Integer button,boolean state) {
-        this(tablet.group,tablet.tabletId,type,button,state);
-    }
-    public Message(Group group,Integer from,Type type,Integer button,boolean state) {
-        this(group.groupId,from,type,button,state);
+    public Message(Tablet<Message> tablet,Type type,Integer button,boolean state) {
+        this(tablet.group.groupId,tablet.tabletId,type,button,state);
     }
     public Message(Integer groupId,Integer from,Type type,Integer button,boolean state) {
         this.groupId=groupId;
@@ -39,31 +27,20 @@ public class Message implements java.io.Serializable {
         this.button=button;
         this.state=state;
     }
-    public interface Sender {
-        Integer tabletId();
-        void send(Message message) throws IOException;
-        Logger logger=Logger.getLogger(Sender.class.getName());
-    }
-    public interface Receiver<T> {
-        void receive(T message) /*throws IOException*/;
-        Logger logger=Logger.getLogger(Receiver.class.getName());
-        public static class DummyReceiver<T> implements Receiver<T> {
-            @Override public void receive(T t) {
-                this.t=t;
-            }
-            public T t;
-        }
-    }
     public boolean isNormal() {
         return type.equals(Type.normal);
     }
     public boolean isControl() {
         return !type.equals(Type.normal);
     }
+    @Override public Message from(String string) {
+        return staticFrom(string);
+    }
+
     @Override public String toString() {
         return groupId+" "+tabletId+" "+type+" "+button+" "+state;
     }
-    public static Message from(String string) {
+    public static Message staticFrom(String string) {
         if(string==null) {
             staticLogger.warning("string is null!");
             // maybe invent a no-op? or null?
@@ -84,8 +61,9 @@ public class Message implements java.io.Serializable {
         Message message=new Message(groupId,fromId,type,button,state);
         return message;
     }
+    // not used, get rid of it?
     public static Message process(int groupId,Receiver<Message> receiver,SocketAddress socketAddress,String string) {
-        Message message=Message.from(string);
+        Message message=Message.staticFrom(string);
         if(message!=null) {
             if(message.groupId.equals(groupId)) {
                 if(receiver!=null) try {
@@ -103,6 +81,7 @@ public class Message implements java.io.Serializable {
     public final Type type;
     public /*final*/ Integer button; // hack for address;
     public final Boolean state;
+    public static final Message dummy=new Message(0,0,Type.dummy,0);
     public static final Set<Class<?>> set=new LinkedHashSet<>();
     private static final long serialVersionUID=1L;
     public final Logger logger=Logger.getLogger(getClass().getName());

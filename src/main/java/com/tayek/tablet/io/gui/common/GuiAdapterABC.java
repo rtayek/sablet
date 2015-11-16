@@ -1,4 +1,4 @@
-package com.tayek.tablet.gui.common;
+package com.tayek.tablet.io.gui.common;
 import java.util.Observable;
 import java.util.Observer;
 import com.tayek.tablet.model.Model;

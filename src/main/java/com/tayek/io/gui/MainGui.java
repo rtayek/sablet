@@ -1,6 +1,5 @@
-package com.tayek.utilities;
+package com.tayek.io.gui;
 import java.awt.BorderLayout;
-import java.util.*;
 import javax.swing.*;
 public abstract class MainGui extends JPanel {
     @SuppressWarnings("serial") public static class MyJApplet extends JApplet {

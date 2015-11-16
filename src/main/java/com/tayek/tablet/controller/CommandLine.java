@@ -2,15 +2,14 @@ package com.tayek.tablet.controller;
 import java.io.*;
 import java.net.*;
 import java.util.*;
-import com.tayek.audio.AudioObserver;
 import com.tayek.tablet.*;
-import com.tayek.tablet.gui.swing.*;
+import com.tayek.tablet.io.gui.swing.*;
 import com.tayek.tablet.model.*;
+import com.tayek.tablet.model.Model.Observer;
 import com.tayek.tablet.view.View;
-import com.tayek.tablet.view.View.CommandLineView;
-public class CommandLineController {
-    CommandLineController(Group group,int tabletId) {
-        tablet=new Tablet(group,tabletId);
+public class CommandLine {
+    CommandLine(Group group,int tabletId) {
+        tablet=new Tablet<>(group,tabletId);
     }
     private static void usage() {
         System.out.println("usage:");
@@ -39,7 +38,7 @@ public class CommandLineController {
                 break;
             case 'a':
                 if(audioObserver==null) {
-                    audioObserver=AudioObserver.instance;
+                    audioObserver=new Observer(tablet.group.model);
                     tablet.group.model.addObserver(audioObserver);
                 } else {
                     tablet.group.model.deleteObserver(audioObserver);
@@ -61,12 +60,11 @@ public class CommandLineController {
                 } else System.out.println("syntax error: "+command);
                 break;
             case 'o': // send start form foreign group
-                Message message=new Message(99,tablet.tabletId,Message.Type.startup,0);
-                tablet.broadcast(message);
+                //tablet.send(Message.dummy,0);
                 break;
             case 'c':
                 if(commandLineView==null) {
-                    commandLineView=new View.CommandLineView(tablet.group.model);
+                    commandLineView=new View.CommandLine(tablet.group.model);
                     tablet.group.model.addObserver(commandLineView);
                 } else {
                     tablet.group.model.deleteObserver(commandLineView);
@@ -96,15 +94,13 @@ public class CommandLineController {
                 break;
             case 'p':
                 System.out.println(tablet.group.model);
-                
                 break;
             case 'r':
                 tablet.group.model.reset();
                 break;
             case 's':
-                System.out.println("before");
-                tablet.startListening();
-                System.out.println("after");
+                boolean ok=tablet.startListening();
+                if(!ok) System.out.println("badness");
                 break;
             case 't':
                 tablet.stopListening();
@@ -151,11 +147,11 @@ public class CommandLineController {
         map.put(1,host);
         System.out.println(map);
         Group group=new Group(1,map);
-        new CommandLineController(group,1).run();
+        new CommandLine(group,1).run();
     }
-    final Tablet tablet;
-    CommandLineView commandLineView;
-    AudioObserver audioObserver;
+    final Tablet<Message> tablet;
+    View.CommandLine commandLineView;
+    Observer audioObserver;
     OldGui gui;
     Gui newGui;
     public static final String lineSeparator=System.getProperty("line.separator");

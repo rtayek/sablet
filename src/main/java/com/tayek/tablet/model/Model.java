@@ -1,9 +1,27 @@
 package com.tayek.tablet.model;
 import java.util.*;
 import java.util.logging.Logger;
-import com.tayek.audio.Audio.Sound;
+import com.tayek.io.Audio;
+import com.tayek.io.Audio.*;
+import com.tayek.*;
+import com.tayek.tablet.Main;
+import com.tayek.tablet.model.Message;
 import com.tayek.tablet.model.Message.*;
 public class Model extends Observable implements Receiver<Message>,Cloneable {
+    public static class Observer implements java.util.Observer {
+        public Observer(Model model) {
+            this.model=model;
+        }
+        @Override public void update(Observable model,Object hint) {
+            System.out.println("hint: "+hint);
+            if(model instanceof Model) if(model.equals(this.model)) if(hint instanceof Sound) audioPlayer.play((Sound)hint);
+            else System.out.println("not our hint: "+hint);
+            else System.out.println("not our model!");
+            else System.out.println("not a model!");
+        }
+        private final Model model;
+        private static final Audio audioPlayer=Audio.factory.create();
+    }
     public Model(int buttons) {
         this(buttons,++ids);
     }
@@ -47,19 +65,14 @@ public class Model extends Observable implements Receiver<Message>,Cloneable {
                             // hint from set state is/was button id.
                             // new hint should be state changed
                             // (boolean,who)
-                           // Hint hint=new Hint(message);
                             int n=random.nextInt(Sound.values().length);
-                            System.out.println(Sound.values()[n]);
-                            setChangedAndNotify(Sound.values()[n]);
+                            if(false) setChangedAndNotify("sound:"+n);
+                            else Main.audio.play(Sound.values()[n]);
                         } else logger.finest("no change");
                     }
                     setState(message.button,message.state);
                     break;
-                case startup:
-                    break;
-                case hello:
-                    break;
-                case goodbye:
+                case dummy:
                     break;
                 default:
                     throw new RuntimeException("message type: "+message.type+" was not handled!");
@@ -103,7 +116,7 @@ public class Model extends Observable implements Receiver<Message>,Cloneable {
     }
     public static void main(String[] args) throws Exception {
         Model model=new Model(7);
-        //model.addObserver(ModelObserver.instance);
+        // model.addObserver(ModelObserver.instance);
         System.out.println(model);
         Message message=new Message(1,1,Type.normal,1,true);
         model.receive(message);
@@ -118,6 +131,6 @@ public class Model extends Observable implements Receiver<Message>,Cloneable {
     private final Boolean[] states;
     public final Map<Integer,Integer> idToLastOnFrom=new TreeMap<>();
     final Random random=new Random();
-    static int ids=0;
     public final Logger logger=Logger.getLogger(getClass().getName());
+    static int ids=0;
 }

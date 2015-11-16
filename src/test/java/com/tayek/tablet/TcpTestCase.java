@@ -5,10 +5,9 @@ import java.net.*;
 import java.util.logging.Level;
 import org.junit.*;
 import org.junit.Test;
+import com.tayek.Receiver.DummyReceiver;
+import com.tayek.io.IO.*;
 import com.tayek.tablet.model.Message;
-import com.tayek.tablet.model.Message.*;
-import com.tayek.tablet.model.Message.Receiver.*;
-import com.tayek.utilities.LoggingHandler;
 public class TcpTestCase {
     @BeforeClass public static void setUpBeforeClass() throws Exception {
         Main.log.setLevel(Level.OFF);
@@ -31,18 +30,17 @@ public class TcpTestCase {
     private boolean sendAndReceiveOneMessage(int service) throws UnknownHostException,IOException,InterruptedException {
         InetAddress inetAddress=InetAddress.getLocalHost();
         DummyReceiver<Message> receiver=new DummyReceiver<>();
-        Server server=new Server(inetAddress,service,receiver);
+        Server<Message> server=new Server<>(inetAddress,service,receiver,Message.dummy);
         server.start();
-        Client client=new Client(inetAddress,service,10);
-        Message message=new Message(1,1,Type.startup,0);
-        client.send(message);
+        Client<Message> client=new Client<>(inetAddress,service,10);
+        client.send(Message.dummy,1);
         Thread.sleep(10);
         server.stopServer();
         server.join();
         // System.out.println(receiver.t);
         if(receiver.t==null)
             System.out.println("null");
-        boolean isOk=receiver.t!=null&&message.toString().equals(receiver.t.toString());
+        boolean isOk=receiver.t!=null&&Message.dummy.toString().equals(receiver.t.toString());
         return isOk;
     }
 }

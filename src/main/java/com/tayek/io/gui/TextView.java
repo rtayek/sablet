@@ -1,4 +1,4 @@
-package com.tayek.gui;
+package com.tayek.io.gui;
 import java.awt.BorderLayout;
 import java.awt.Font;
 import java.awt.GraphicsEnvironment;
@@ -48,7 +48,7 @@ import com.tayek.utilities.Tee;
     public JFrame frame;
     JTextArea textArea=new JTextArea(30,60);
     {
-        String[] x=GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames();
+        //String[] x=GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames();
         //System.out.println(""+Arrays.asList(x));
         textArea.setFont(new Font("Lucida Console",Font.PLAIN,16));
     }

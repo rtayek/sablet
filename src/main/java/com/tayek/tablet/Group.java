@@ -1,7 +1,8 @@
 package com.tayek.tablet;
 import java.util.*;
 import java.util.logging.Logger;
-import com.tayek.tablet.gui.common.Toaster;
+import com.tayek.io.*;
+import com.tayek.io.Toaster.*;
 import com.tayek.tablet.model.*;
 public class Group implements Cloneable {
     public static class Triple<F,S,T> {
@@ -15,7 +16,6 @@ public class Group implements Cloneable {
         public final T t;
     }
     public Group(Integer groupId,Map<Integer,String> idToHost) {
-        // nobody should call this ctor except for home!
         this(groupId,idToHost,++serialNumbers,new ToasterImpl());
     }
     private Group(Integer groupId,Map<Integer,String> idToHost,Integer serialNumber,Toaster toaster) {

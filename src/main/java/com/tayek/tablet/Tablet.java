@@ -3,10 +3,12 @@ import java.io.IOException;
 import java.net.*;
 import java.util.*;
 import java.util.logging.Logger;
+import com.tayek.*;
+import com.tayek.io.IO.*;
 import com.tayek.tablet.model.*;
-import com.tayek.tablet.model.Message.*;
 // http://www.instructables.com/id/How-To-Setup-Eclipse-for-Android-App-Development/step9/Access-ADT-Plugin-Preferences/
-public class Tablet {
+// add a method or a class to exercise random presses!
+public class Tablet<T> implements Sender<T> {
     public Tablet(Group group,int tabletId) {
         this(group,tabletId,"Room: "+tabletId);
     }
@@ -19,9 +21,13 @@ public class Tablet {
         try {
             String host=group.idToHost().get(tabletId);
             System.out.println("host: "+host);
+            // this guy should be able to get his own ip address.
+            // use this to allow a foreign visitor/monitor
+            // he should send an "add me" or ask for
+            // visiting privileges.
             SocketAddress socketAddress=new InetSocketAddress(host,Server.port(tabletId));
             System.out.println("socketAddress: "+socketAddress);
-            server=new Server(socketAddress,group.model);
+            server=new Server<Message>(socketAddress,group.model,Message.dummy);
             server.start();
             return true;
         } catch(BindException e) {
@@ -34,7 +40,7 @@ public class Tablet {
     public void stopListening() {
         server.stopServer();
     }
-    public void broadcast(final Message message) {
+    @Override public boolean send(final T t,int unused) {
         Thread thread=new Thread(new Runnable() {
             @Override public void run() {
                 Map<Integer,String> map=group.idToHost();
@@ -46,8 +52,8 @@ public class Tablet {
                         try {
                             inetAddress=InetAddress.getByName(host);
                             logger.info("host: "+host+":"+Server.port(destinationTabletId));
-                            Client client=new Client(inetAddress,Server.port(destinationTabletId));
-                            if(client.send(message)) logger.fine("send worked");
+                            Client<T> client=new Client<>(inetAddress,Server.port(destinationTabletId));
+                            if(client.send(t,tabletId)) logger.fine("send worked");
                         } catch(UnknownHostException e) {
                             e.printStackTrace();
                         }
@@ -56,6 +62,7 @@ public class Tablet {
             }
         },"broadcast");
         thread.start();
+        return true; //lie!
     }
     public String name() {
         return name;
@@ -69,7 +76,7 @@ public class Tablet {
     final String name;
     public final Group group;
     public final Integer tabletId;
-    Server server;
+    Server<Message> server;
     public final Logger logger=Logger.getLogger(getClass().getName());
     public static final Set<Class<?>> loggers=new LinkedHashSet<>();
     static {

@@ -1,11 +1,9 @@
-package com.tayek.tablet.gui.swing;
-import com.tayek.audio.AudioObserver;
-import com.tayek.gui.TextView;
+package com.tayek.tablet.io.gui.swing;
+import com.tayek.io.gui.*;
 import com.tayek.tablet.*;
-import com.tayek.tablet.gui.common.GuiAdapterABC;
+import com.tayek.tablet.io.gui.common.GuiAdapterABC;
 import com.tayek.tablet.model.*;
 import com.tayek.tablet.view.View;
-import com.tayek.utilities.MainGui;
 import java.awt.*;
 import java.awt.event.*;
 import java.net.*;
@@ -13,7 +11,7 @@ import java.util.*;
 import java.util.logging.Level;
 import javax.swing.*;
 public class Gui extends MainGui implements View {
-    Gui(Tablet tablet) {
+    Gui(Tablet<Message> tablet) {
         super();
         this.tablet=tablet;
     }
@@ -71,14 +69,14 @@ public class Gui extends MainGui implements View {
             boolean state=((JToggleButton)e.getSource()).isSelected();
             tablet.group.model.setState(id,state);
             Message message=new Message(tablet,Message.Type.normal,id,state);
-            tablet.broadcast(message);
+            tablet.send(message,0);
         }
     };
     @Override public void update(Observable o,Object hint) {
         if(!(o instanceof Model&&o.equals(tablet.group.model))) throw new RuntimeException("oops");
         adapter.update(o,hint);
     }
-    public static Gui gui(Tablet tablet) {
+    public static Gui gui(Tablet<Message> tablet) {
         final Gui gui=new Gui(tablet);
         // gui.initialize(objects);
         GuiAdapterABC adapter=new GuiAdapterABC(tablet.group.model) {
@@ -118,16 +116,16 @@ public class Gui extends MainGui implements View {
         for(int tabletId=1;tabletId<=2;tabletId++) {
             map.put(tabletId,host);
             Group group=new Group(1,map);
-            Tablet tablet=new Tablet(group,tabletId);
+            Tablet<Message> tablet=new Tablet<>(group,tabletId);
             tablet.startListening();
             Gui gui=gui(tablet);
             tablet.group.model.addObserver(gui);
-            tablet.group.model.addObserver(AudioObserver.instance);
+            tablet.group.model.addObserver(new Model.Observer(tablet.group.model));
             gui.run();
         }
     }
     private static final long serialVersionUID=1L;
-    Tablet tablet;
+    Tablet<Message> tablet;
     /*final*/ GuiAdapterABC adapter;
     final Map<Integer,Color> idToColor=defaultIdToColor;
     Map<Integer,JToggleButton> idToButton=new LinkedHashMap<>();
@@ -143,6 +141,5 @@ public class Gui extends MainGui implements View {
         temp.put(7,Color.cyan);
         defaultIdToColor=Collections.unmodifiableMap(temp);
     }
-
     TextView textView;
 }

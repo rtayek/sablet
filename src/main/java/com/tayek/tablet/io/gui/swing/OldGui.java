@@ -1,7 +1,6 @@
-package com.tayek.tablet.gui.swing;
+package com.tayek.tablet.io.gui.swing;
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
@@ -28,19 +27,17 @@ import javax.swing.JToggleButton;
 import javax.swing.KeyStroke;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-//import com.tayek.audio.ModelObserver;
 import com.tayek.tablet.*;
-import com.tayek.tablet.gui.common.*;
+import com.tayek.tablet.io.gui.common.*;
 import com.tayek.tablet.model.*;
 import com.tayek.tablet.view.View;
 import com.tayek.utilities.*;
-import com.tayek.audio.AudioObserver;
-import com.tayek.gui.*;
+import com.tayek.io.gui.*;
 // put explicit view back in
 // along with command line view and controller
 // make this use the main gui class
 public class OldGui implements View,ActionListener {
-    public OldGui(Tablet tablet) {
+    public OldGui(Tablet <Message>tablet) {
         this.tablet=tablet;
         this.model=tablet.group.model;
         this.tabletId=tablet.tabletId;
@@ -248,7 +245,7 @@ public class OldGui implements View,ActionListener {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.addComponentListener(new ComponentAdapter() {
             @Override public void componentMoved(ComponentEvent ce) {
-                Component c=ce.getComponent();
+                //Component c=ce.getComponent();
                 // logger.info("frame moved to "+c.getLocation());
             }
         });
@@ -267,7 +264,7 @@ public class OldGui implements View,ActionListener {
                 System.out.println("calling set state");
                 model.setState(id,state);
                 Message message=new Message(tablet,Message.Type.normal,id,state);
-                tablet.broadcast(message);
+                tablet.send(message,0);
             }
         };
         build2(changeListener,actionListener);
@@ -294,7 +291,7 @@ public class OldGui implements View,ActionListener {
         }
         return n;
     }
-    public static OldGui gui(Tablet tablet) {
+    public static OldGui gui(Tablet<Message> tablet) {
         final OldGui gui=new OldGui(tablet);
         GuiAdapterABC adapter=new GuiAdapterABC(gui.model) {
             @Override public void setButtonText(int id,String string) {
@@ -314,22 +311,22 @@ public class OldGui implements View,ActionListener {
         for(int tabletId=1;tabletId<=2;tabletId++) {
             map.put(tabletId,host);
             Group group=new Group(1,map);
-            Tablet tablet=new Tablet(group,tabletId);
+            Tablet<Message> tablet=new Tablet<>(group,tabletId);
             tablet.startListening();
             final OldGui gui=gui(tablet);
             tablet.group.model.addObserver(gui);
-            tablet.group.model.addObserver(AudioObserver.instance);
+            tablet.group.model.addObserver(new Model.Observer(tablet.group.model));
             gui.run();
         }
     }
     final int tabletId;
     final Model model;
-    public Tablet tablet;
+    public Tablet<Message> tablet;
     public final TextView textView;
     /*final*/ GuiAdapterABC adapter;
     final Map<Integer,Color> idToColor=Gui.defaultIdToColor;
     final Map<Integer,JToggleButton> idToButton=new LinkedHashMap<>();
-    public JFrame frame=new JFrame() {
+    @SuppressWarnings("serial") public JFrame frame=new JFrame() {
         @Override public void dispose() {
             if(textView!=null) textView.frame.dispose();
             super.dispose();

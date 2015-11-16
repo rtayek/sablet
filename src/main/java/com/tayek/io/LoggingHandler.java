@@ -1,9 +1,8 @@
-package com.tayek.utilities;
+package com.tayek.io;
 import java.io.IOException;
 import java.util.*;
 import java.util.logging.*;
 import java.util.logging.Formatter;
-import com.tayek.tablet.Tablet;
 public class LoggingHandler extends Formatter {
     @Override public String format(LogRecord record) {
         String threadName=Thread.currentThread().getName();
