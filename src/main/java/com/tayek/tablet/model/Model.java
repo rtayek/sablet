@@ -1,27 +1,17 @@
 package com.tayek.tablet.model;
+import static com.tayek.io.IO.*;
+import java.net.*;
 import java.util.*;
 import java.util.logging.Logger;
 import com.tayek.io.Audio;
 import com.tayek.io.Audio.*;
+import com.sun.imageio.plugins.common.I18N;
 import com.tayek.*;
 import com.tayek.tablet.Main;
 import com.tayek.tablet.model.Message;
 import com.tayek.tablet.model.Message.*;
+import com.tayek.tablet.view.View;
 public class Model extends Observable implements Receiver<Message>,Cloneable {
-    public static class Observer implements java.util.Observer {
-        public Observer(Model model) {
-            this.model=model;
-        }
-        @Override public void update(Observable model,Object hint) {
-            System.out.println("hint: "+hint);
-            if(model instanceof Model) if(model.equals(this.model)) if(hint instanceof Sound) audioPlayer.play((Sound)hint);
-            else System.out.println("not our hint: "+hint);
-            else System.out.println("not our model!");
-            else System.out.println("not a model!");
-        }
-        private final Model model;
-        private static final Audio audioPlayer=Audio.factory.create();
-    }
     public Model(int buttons) {
         this(buttons,++ids);
     }
@@ -39,7 +29,6 @@ public class Model extends Observable implements Receiver<Message>,Cloneable {
         }
     }
     public void setChangedAndNotify(Object object) {
-        System.out.println(countObservers());
         setChanged();
         notifyObservers(object);
     }
@@ -52,25 +41,34 @@ public class Model extends Observable implements Receiver<Message>,Cloneable {
             setChangedAndNotify(id);
         }
     }
-    @Override public void receive(Message message) {
+    public Integer lastOnFrom(Integer id) {
+        synchronized(idToLastOnFrom) {
+            return idToLastOnFrom.get(id);
+        }
+    }
+    @Override public void receive(Message message,Object extra) {
         if(message!=null) {
             logger.fine("received message: "+message);
+            if(extra!=null&&extra instanceof InetAddress) { // bad place for this!
+                p("from inet address: "+extra);
+                //InetAddress inetAddress=InetAddress.
+                // ((SocketAddress)extra).
+            }
             switch(message.type) {
-                case normal:
-                    if(message.state.equals(true)) {
-                        synchronized(idToLastOnFrom) {
-                            idToLastOnFrom.put(message.button,message.tabletId);
+                case normal: // assume that the button id is the one he pushed.
+                    // sync this?
+                    for(int i=1;i<=Math.min(buttons,message.string.length());i++) {
+                        if(i==message.button) if(message.state(i)) {
+                            synchronized(idToLastOnFrom) {
+                                idToLastOnFrom.put(i,message.tabletId);
+                            }
+                            if(!state(i).equals(message.state(i))) {
+                                int n=random.nextInt(Sound.values().length);
+                                setChangedAndNotify("sound:"+n);
+                            } else logger.finest("no change");
                         }
-                        if(!state(message.button).equals(message.state)) {
-                            // hint from set state is/was button id.
-                            // new hint should be state changed
-                            // (boolean,who)
-                            int n=random.nextInt(Sound.values().length);
-                            if(false) setChangedAndNotify("sound:"+n);
-                            else Main.audio.play(Sound.values()[n]);
-                        } else logger.finest("no change");
+                        setState(i,message.state(i));
                     }
-                    setState(message.button,message.state);
                     break;
                 case dummy:
                     break;
@@ -91,11 +89,19 @@ public class Model extends Observable implements Receiver<Message>,Cloneable {
             return copy;
         }
     }
+    public static Character toCharacter(Boolean state) {
+        return state==null?null:state?'T':'F';
+    }
+    public String toCharacters() {
+        String s="";
+        for(boolean state:states)
+            s+=toCharacter(state);
+        return s;
+    }
     @Override public String toString() {
         String s="("+serialNumber+"): {";
         synchronized(states) {
-            for(boolean state:states)
-                s+=state?'T':"F";
+            s+=toCharacters();
             s+='}';
             return s;
         }
@@ -105,6 +111,7 @@ public class Model extends Observable implements Receiver<Message>,Cloneable {
         return areAllButtonsInTheSameState(this,model);
     }
     public static synchronized boolean areAllButtonsInTheSameState(Model model,Model model2) {
+        // this may not require sync, since states() is sync'ed.
         boolean areEqual=true;
         final Boolean[] states=model.states(),states2=model2.states();
         for(int i=0;i<model.buttons;i++)
@@ -115,12 +122,16 @@ public class Model extends Observable implements Receiver<Message>,Cloneable {
         return areEqual;
     }
     public static void main(String[] args) throws Exception {
-        Model model=new Model(7);
         // model.addObserver(ModelObserver.instance);
-        System.out.println(model);
-        Message message=new Message(1,1,Type.normal,1,true);
-        model.receive(message);
-        System.out.println(model);
+        Model model=new Model(7);
+        p(model.toString());
+        Message message=new Message(Type.normal,1,1,1,"FFTFFF");
+        model.receive(message,null);
+        message=new Message(Type.normal,1,1,1,"FFTFFFF");
+        model.receive(message,null);
+        message=new Message(Type.normal,1,1,1,"FFTFFFFF");
+        model.receive(message,null);
+        p(model.toString());
     }
     public Object clone() {
         Model clone=new Model(buttons,serialNumber);
@@ -129,8 +140,9 @@ public class Model extends Observable implements Receiver<Message>,Cloneable {
     public final int serialNumber;
     public final Integer buttons;
     private final Boolean[] states;
-    public final Map<Integer,Integer> idToLastOnFrom=new TreeMap<>();
+    private final Map<Integer,Integer> idToLastOnFrom=new TreeMap<>();
     final Random random=new Random();
     public final Logger logger=Logger.getLogger(getClass().getName());
+    public static final Logger staticLogger=Logger.getLogger(Model.class.getName());
     static int ids=0;
 }

@@ -25,6 +25,6 @@ run {
 	systemProperties System.getProperties()
 }
 class MyStuff {
-	public static final String main='com.tayek.tablet.gui.swing.Gui'
+	public static final String main='com.tayek.tablet.Main'
 }
 

@@ -50,7 +50,7 @@ public class LoggingHandler extends Formatter {
         Map<Class<?>,Logger> map=new LinkedHashMap<Class<?>,Logger>();
         for(Class<?> clazz:classes) {
             Logger logger=Logger.getLogger(clazz.getName());
-            LoggingHandler.addMyHandlerAndSetLevel(logger,Level.FINEST);
+            LoggingHandler.addMyHandlerAndSetLevel(logger,Level.OFF);
             map.put(clazz,logger);
         }
         return map;

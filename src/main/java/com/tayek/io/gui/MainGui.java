@@ -24,19 +24,22 @@ public abstract class MainGui extends JPanel {
     public abstract void initialize(); // runs on current thread
     public abstract String title();
     public abstract void addContent(); // runs on awt/edt thread
+    public void build() {
+        if(MainGui.this.isApplet()) MainGui.this.addContent();
+        else {
+            MainGui.this.frame.setTitle(MainGui.this.title());
+            MainGui.this.frame.getContentPane().add(MainGui.this,BorderLayout.CENTER);
+            MainGui.this.addContent();
+            MainGui.this.frame.pack();
+            MainGui.this.frame.setVisible(true);
+        }
+    }
     protected void run() {
+        initialize(); // non gui stuff
         setLayout(new BorderLayout());
-        initialize();
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                if(MainGui.this.isApplet()) MainGui.this.addContent();
-                else {
-                    MainGui.this.frame.setTitle(MainGui.this.title());
-                    MainGui.this.frame.getContentPane().add(MainGui.this,BorderLayout.CENTER);
-                    MainGui.this.addContent();
-                    MainGui.this.frame.pack();
-                    MainGui.this.frame.setVisible(true);
-                }
+                build(); // gui stuff
             }
         });
     }
@@ -52,7 +55,7 @@ public abstract class MainGui extends JPanel {
             @Override public void addContent() {};
         };
     }
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
         create(null);
     }
     /*protected final*/ public JFrame frame;

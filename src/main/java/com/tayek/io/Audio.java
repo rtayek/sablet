@@ -2,6 +2,8 @@ package com.tayek.io;
 import java.io.BufferedInputStream;
 import java.util.logging.Logger;
 import javax.sound.sampled.*;
+import com.tayek.tablet.Main;
+import static com.tayek.io.IO.*;
 public interface Audio {
     enum Sound {
         electronic_chime_kevangc_495939803,glass_ping_go445_1207030150,store_door_chime_mike_koenig_570742973;
@@ -10,30 +12,41 @@ public interface Audio {
     static class Windows implements Audio {
         private Windows() {}
         @Override public void play(final Sound sound) {
-            new Thread(new Runnable() {
+            if(Main.sound) new Thread(new Runnable() {
                 @Override public void run() {
                     try {
                         String filename=sound.name()+".wav";
                         Clip clip=AudioSystem.getClip();
-                        System.out.println("clip: "+clip);
                         AudioInputStream inputStream=AudioSystem.getAudioInputStream(new BufferedInputStream(Audio.class.getResourceAsStream(filename)));
                         if(inputStream!=null) {
-                            System.out.println(inputStream);
                             clip.open(inputStream);
-                            System.out.println("is open");
+                            logger.info(filename+" is open.");
                             FloatControl gainControl=(FloatControl)clip.getControl(FloatControl.Type.MASTER_GAIN);
                             gainControl.setValue(+6.0f); // ?
                             clip.start();
+                            // maybe do not wait?
                             while(clip.getMicrosecondLength()!=clip.getMicrosecondPosition())
                                 Thread.yield(); // wait
+                            // or at least don't wait here?
                             Thread.sleep(300);
                         }
                     } catch(Exception e) {
-                        System.out.println("failed to play: "+sound);
+                        logger.warning("failed to play: "+sound);
                     }
                 };
             },"play sound").start();
         }
+        public static void main(String[] args) throws InterruptedException {
+            Audio audio=Audio.factory.create();
+            Main.sound=true;
+            for(Sound sound:Sound.values()) {
+                p("play: "+sound);
+                audio.play(sound);
+                Thread.sleep(600);
+            }
+                
+        }
+
     }
     public static class Android implements Audio {
         public interface Callback<T> {
@@ -41,12 +54,13 @@ public interface Audio {
         }
         private Android() {}
         @Override public void play(Sound sound) {
-            if(callback!=null) callback.call(sound);
+            if(Main.sound) if(callback!=null) callback.call(sound);
             else {
-                System.out.println("set callback!");
+                logger.warning("callback is not set: "+sound);
+                p("set callback!");
                 StackTraceElement[] x=Thread.currentThread().getStackTrace();
                 for(int i=0;i<Math.min(10,x.length);i++)
-                    System.out.println(x[i]);
+                    p(x[i].toString());
             }
         }
         public void setCallback(Callback<Sound> callback) {

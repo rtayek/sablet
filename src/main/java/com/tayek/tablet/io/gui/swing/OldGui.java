@@ -28,20 +28,22 @@ import javax.swing.KeyStroke;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import com.tayek.tablet.*;
+import com.tayek.tablet.Tablet.MenuItem;
 import com.tayek.tablet.io.gui.common.*;
 import com.tayek.tablet.model.*;
-import com.tayek.tablet.view.View;
+import com.tayek.tablet.view.*;
 import com.tayek.utilities.*;
 import com.tayek.io.gui.*;
+import static com.tayek.io.IO.*;
+
 // put explicit view back in
 // along with command line view and controller
 // make this use the main gui class
 public class OldGui implements View,ActionListener {
-    public OldGui(Tablet <Message>tablet) {
+    public OldGui(Tablet<Message> tablet) {
         this.tablet=tablet;
         this.model=tablet.group.model;
-        this.tabletId=tablet.tabletId;
-        String prefix="tablet "+tabletId;
+        String prefix="tablet "+tablet.tabletId();
         if(true) {
             textView=TextView.addTextView(prefix);
         } else {
@@ -64,9 +66,9 @@ public class OldGui implements View,ActionListener {
     }
     @Override public void actionPerformed(ActionEvent e) {
         logger.info("action performed: "+e);
-        TabletMenuItem x=TabletMenuItem.valueOf(e.getActionCommand());
+        MenuItem x=MenuItem.valueOf(e.getActionCommand());
         if(x!=null) {
-            if(x.equals(TabletMenuItem.Log)) textView.setVisible(!textView.isVisible());
+            if(x.equals(MenuItem.Log)) textView.setVisible(!textView.isVisible());
             else x.doItem(tablet);
         } else if(e.getActionCommand().equals("Open ...")) {
             logger.info("not implemented: "+e.getActionCommand());
@@ -124,7 +126,7 @@ public class OldGui implements View,ActionListener {
         menu.setMnemonic(KeyEvent.VK_O);
         menu.getAccessibleContext().setAccessibleDescription("Options menu");
         // Reset,Ping,Disconnect,Connect,Log;
-        if(true) for(TabletMenuItem x:TabletMenuItem.values()) {
+        if(true) for(MenuItem x:MenuItem.values()) {
             menuItem=new JMenuItem(x.name());
             int vk=(KeyEvent.VK_A-1)+(x.name().toUpperCase().charAt(0)-'A');
             menuItem.setAccelerator(KeyStroke.getKeyStroke(vk,ActionEvent.ALT_MASK));
@@ -195,7 +197,7 @@ public class OldGui implements View,ActionListener {
         JPanel top=new JPanel();
         JLabel topLabel=new JLabel("top");
         Font current=topLabel.getFont();
-        System.out.println(topLabel.getFont());
+        p(topLabel.getFont().toString());
         Font small=new Font(current.getName(),current.getStyle(),2*current.getSize()/3);
         topLabel.setFont(small);
         top.add(topLabel);
@@ -212,7 +214,7 @@ public class OldGui implements View,ActionListener {
         JPanel top=new JPanel();
         JLabel topLabel=new JLabel("top");
         Font current=topLabel.getFont();
-        System.out.println(topLabel.getFont());
+        p(topLabel.getFont().toString());
         JPanel middle=new JPanel();
         middle.setLayout(new BoxLayout(middle,BoxLayout.Y_AXIS));
         for(Integer id=1;id<=model.buttons;id++) {
@@ -240,12 +242,12 @@ public class OldGui implements View,ActionListener {
         frame.getContentPane().add(bottom,BorderLayout.PAGE_END);
     }
     void createAndShowGUI() {
-        frame=new JFrame("Tablet "+tabletId);
+        frame=new JFrame("Tablet "+tablet.tabletId());
         frame.setUndecorated(false);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.addComponentListener(new ComponentAdapter() {
             @Override public void componentMoved(ComponentEvent ce) {
-                //Component c=ce.getComponent();
+                // Component c=ce.getComponent();
                 // logger.info("frame moved to "+c.getLocation());
             }
         });
@@ -253,17 +255,18 @@ public class OldGui implements View,ActionListener {
         frame.setJMenuBar(jMenuBar);
         ChangeListener changeListener=new ChangeListener() {
             @Override public void stateChanged(ChangeEvent e) {
-                logger.finer("model "+tabletId+", button "+((JToggleButton)e.getSource()).getName()+" is "+((JToggleButton)e.getSource()).isSelected());
+                logger.finer(
+                        "model "+tablet.tabletId()+", button "+((JToggleButton)e.getSource()).getName()+" is "+((JToggleButton)e.getSource()).isSelected());
             }
         };
         ActionListener actionListener=new ActionListener() {
             @Override public void actionPerformed(ActionEvent e) {
-                logger.fine("model "+tabletId+", button "+((JToggleButton)e.getSource()).getName()+" is "+((JToggleButton)e.getSource()).isSelected());
+                logger.fine("model "+tablet.tabletId()+", button "+((JToggleButton)e.getSource()).getName()+" is "+((JToggleButton)e.getSource()).isSelected());
                 int id=new Integer(((JToggleButton)e.getSource()).getName());
                 boolean state=((JToggleButton)e.getSource()).isSelected();
-                System.out.println("calling set state");
+                p("calling set state");
                 model.setState(id,state);
-                Message message=new Message(tablet,Message.Type.normal,id,state);
+                Message message=new Message(Message.Type.normal,tablet.group.groupId,tablet.tabletId(),id,tablet.group.model.toCharacters());
                 tablet.send(message,0);
             }
         };
@@ -272,7 +275,7 @@ public class OldGui implements View,ActionListener {
         frame.setVisible(true);
     }
     @Override public void update(Observable o,Object hint) {
-        logger.fine("model "+tabletId+", hint: "+hint);
+        logger.fine("model "+tablet.tabletId()+", hint: "+hint);
         if(!(o instanceof Model&&o.equals(model))) throw new RuntimeException("oops");
         adapter.update(o,hint);
     }
@@ -287,13 +290,13 @@ public class OldGui implements View,ActionListener {
         try {
             n=Integer.valueOf(argument);
         } catch(NumberFormatException e) {
-            System.out.println(argument+" is not a valid tabletId");
+            p(argument+" is not a valid tabletId");
         }
         return n;
     }
     public static OldGui gui(Tablet<Message> tablet) {
         final OldGui gui=new OldGui(tablet);
-        GuiAdapterABC adapter=new GuiAdapterABC(gui.model) {
+        GuiAdapterABC adapter=new GuiAdapterABC(tablet) {
             @Override public void setButtonText(int id,String string) {
                 gui.idToButton.get(id).setText(string);
             }
@@ -306,20 +309,19 @@ public class OldGui implements View,ActionListener {
     }
     public static void main(String[] arguments) throws IOException,InterruptedException {
         Main.log.setLevel(Level.WARNING);
-        Map<Integer,String> map=new TreeMap<>();
+        Map<Integer,Group.Info> map=new TreeMap<>();
         String host=InetAddress.getLocalHost().getHostName();
         for(int tabletId=1;tabletId<=2;tabletId++) {
-            map.put(tabletId,host);
+            map.put(tabletId,new Group.Info(host,"Tablet 1 on PC"));
             Group group=new Group(1,map);
             Tablet<Message> tablet=new Tablet<>(group,tabletId);
             tablet.startListening();
             final OldGui gui=gui(tablet);
             tablet.group.model.addObserver(gui);
-            tablet.group.model.addObserver(new Model.Observer(tablet.group.model));
+            tablet.group.model.addObserver(new AudioObserver(tablet.group.model));
             gui.run();
         }
     }
-    final int tabletId;
     final Model model;
     public Tablet<Message> tablet;
     public final TextView textView;

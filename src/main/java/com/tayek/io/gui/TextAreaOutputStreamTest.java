@@ -3,6 +3,7 @@ import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.PrintStream;
+import static com.tayek.io.IO.*; 
 import javax.swing.*;
 @SuppressWarnings("serial") public class TextAreaOutputStreamTest extends JPanel {
 	private JTextArea textArea=new JTextArea(15,30);
@@ -18,7 +19,7 @@ import javax.swing.*;
 				// though this outputs via System.out.println, it actually
 				// displays
 				// in the JTextArea:
-				System.out.println("Count is now: "+count+" seconds");
+				p("Count is now: "+count+" seconds");
 				count++;
 			}
 		}).start();

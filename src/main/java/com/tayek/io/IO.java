@@ -1,12 +1,13 @@
 package com.tayek.io;
 import java.io.*;
 import java.net.*;
+import java.util.*;
 import java.util.concurrent.*;
 import java.util.logging.Logger;
 import com.tayek.*;
 import com.tayek.tablet.Main;
 public class IO {
-    public static class Client<T> implements Sender<T> {
+    public static class Client<T>implements Sender<T> {
         public Client(InetAddress inetAddress,int service) throws UnknownHostException {
             this(new InetSocketAddress(inetAddress,service),defaultTimeout);
         }
@@ -30,12 +31,13 @@ public class IO {
         }
         public boolean sendOnThread(T t,int id) throws InterruptedException,ExecutionException {
             Future<Boolean> future=sendFuture(t,id); // not used yet
+            // alternative to just using thread
             while(!future.isDone())
                 ;
             boolean ok=future.get();
             return ok;
         }
-        private boolean sendTo(T t,int id) {
+        private boolean send_(T t,int id) {
             Socket socket=connect(id,socketAddress,timeout);
             if(socket!=null) {
                 try {
@@ -43,7 +45,7 @@ public class IO {
                     out.write(t.toString()+"\n");
                     out.flush();
                     // out.close();
-                    socket.shutdownInput();
+                    socket.shutdownInput(); // can this be done earlier?
                     socket.shutdownOutput();
                     socket.close();
                     logger.fine("sent: "+t+" at: "+System.currentTimeMillis());
@@ -58,11 +60,11 @@ public class IO {
         static class Holder {
             Boolean ok=null;
         }
-        public boolean send(final T t,final int id) {
+        public boolean send(final T t,final int id) { // future or async?
             final Holder holder=new Holder();
             Thread thread=new Thread(new Runnable() {
                 @Override public void run() {
-                    holder.ok=sendTo(t,id);
+                    holder.ok=send_(t,id);
                 }
             },"send thread");
             thread.start();
@@ -96,6 +98,8 @@ public class IO {
         public final Logger logger=Logger.getLogger(getClass().getName());
         public static final Logger staticLogger=Logger.getLogger(Client.class.getName());
     }
+    // maybe make server just pass the string along
+    //
     public static class Server<T extends From<T>>extends Thread {
         public Server(InetAddress inetAddress,int service,Receiver<T> receiver,T t) throws IOException {
             this(new InetSocketAddress(inetAddress,service),receiver,t);
@@ -125,7 +129,7 @@ public class IO {
                         T t=this.t.from(string);
                         logger.fine("received: "+t+" at: "+System.currentTimeMillis());
                         Main.toaster.toast("received: "+t+" at: "+System.currentTimeMillis());
-                        if(receiver!=null) receiver.receive(t);
+                        if(receiver!=null) receiver.receive(t,socket.getInetAddress());
                     }
                     socket.shutdownInput();
                     socket.shutdownOutput();
@@ -166,14 +170,38 @@ public class IO {
         static Integer service0=10_000;
         public final Logger logger=Logger.getLogger(getClass().getName());
     }
+    public static void pn(String string) {
+        System.out.print(string);
+        System.out.flush();
+    }
+    public static void p(String string) {
+        pn(string);
+        pn(System.getProperty("line.separator"));
+    }
+    static void printNetworkInterface(NetworkInterface netint) {
+        p("Display name: "+netint.getDisplayName()+", Name: "+netint.getName());
+        Enumeration<InetAddress> inetAddresses=netint.getInetAddresses();
+        for(InetAddress inetAddress:Collections.list(inetAddresses))
+            p("\tInetAddress: "+inetAddress+" "+inetAddress.isSiteLocalAddress());
+    }
     public static void printThreads() {
         int big=2*Thread.activeCount();
         Thread[] threads=new Thread[big];
         Thread.enumerate(threads);
         for(Thread thread:threads)
-            if(thread!=null) System.out.println(thread);
+            if(thread!=null) p(thread.toString());
     }
-    public static void main(String[] args) {
-        // TODO Auto-generated method stub
+    public static void printNetworkInterfaces() {
+        Enumeration<NetworkInterface> networkInterfaces;
+        try {
+            networkInterfaces=NetworkInterface.getNetworkInterfaces();
+            for(NetworkInterface networkInterface:Collections.list(networkInterfaces))
+                printNetworkInterface(networkInterface);
+        } catch(SocketException e) {
+            p("caught: "+e);
+        }
+    }
+    public static void main(String args[]) {
+        printNetworkInterfaces();
     }
 }

@@ -1,4 +1,5 @@
 package com.tayek.tablet;
+import static com.tayek.io.IO.*;
 import static org.junit.Assert.*;
 import java.io.IOException;
 import java.net.*;
@@ -19,12 +20,12 @@ public class TcpTestCase {
         sendAndReceiveOneMessage(12345);
     }
     @Test public void testManyTimes() throws Exception {
-        for(int i=1;i<=100_000;i++) {
-            // System.out.println(i);
+        for(Integer i=1;i<=100;i++) {
+            // p(i);
             if(!(sendAndReceiveOneMessage(20_000+i))) fail("failed at: "+i);
             Thread.sleep(10);
-            if(i%100==0)
-                System.out.println(i);
+            if(i%1000==0)
+                p(i.toString());
         }
     }
     private boolean sendAndReceiveOneMessage(int service) throws UnknownHostException,IOException,InterruptedException {
@@ -37,9 +38,9 @@ public class TcpTestCase {
         Thread.sleep(10);
         server.stopServer();
         server.join();
-        // System.out.println(receiver.t);
+        // p(receiver.t);
         if(receiver.t==null)
-            System.out.println("null");
+            p("null");
         boolean isOk=receiver.t!=null&&Message.dummy.toString().equals(receiver.t.toString());
         return isOk;
     }
