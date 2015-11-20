@@ -1,11 +1,12 @@
 package com.tayek.tablet;
-import static com.tayek.io.IO.*;
+import static com.tayek.tablet.io.IO.*;
 import java.io.IOException;
 import java.net.*;
 import java.util.*;
 import java.util.logging.*;
 import com.tayek.io.*;
-import com.tayek.io.Toaster.*;
+import com.tayek.tablet.io.Toaster;
+import com.tayek.tablet.io.Toaster.*;
 import com.tayek.tablet.io.gui.swing.Gui;
 import com.tayek.tablet.model.*;
 import com.tayek.tablet.model.Message.Type;
@@ -51,6 +52,7 @@ public class Group implements Cloneable {
             return idToHost.keySet();
         }
     }
+    public void check(int tabletId,InetAddress inetAddress) {}
     public List<InetAddress> checkHost(String host) {
         List<InetAddress> hosts=new ArrayList<>();
         try {
@@ -71,6 +73,13 @@ public class Group implements Cloneable {
             return idToHost.get(tabletId);
         }
     }
+    public void checkForNewInetAddress(int from,InetAddress inetAddress) {
+        String host=info(from).host;
+        if(!inetAddress.equals(host)) {
+            p(host+"!="+inetAddress);
+            logger.warning(host+"!="+inetAddress);
+        }
+    }
     public String buttonName(int tabletId,int buttonId) {
         return info(tabletId).name+"/button "+buttonId;
     }
@@ -88,13 +97,13 @@ public class Group implements Cloneable {
         }
         return Collections.unmodifiableMap(copy);
     }
-    public static Message random(Tablet<Message> tablet) {
+    public static Message random(Tablet tablet) {
         int buttonId=random.nextInt(tablet.group.model.buttons)+1;
         boolean state=random.nextBoolean();
         // tablet.group.model.setState(buttonId,state);
         return new Message(Type.normal,tablet.group.groupId,tablet.tabletId(),buttonId,tablet.group.model.toCharacters());
     }
-    public static Message randomToggle(Tablet<Message> tablet) {
+    public static Message randomToggle(Tablet tablet) {
         int buttonId=random.nextInt(tablet.group.model.buttons)+1;
         System.out.println(Thread.currentThread()+" sync "+tablet);
         boolean state=!tablet.group.model.state(buttonId);
@@ -116,11 +125,11 @@ public class Group implements Cloneable {
         Map<Integer,Group.Info> map=Group.g7;
         // Tablet.simulate(tablet);
         // add code to check that these guys are in sync!
-        Map<Integer,Tablet<Message>> tablets=new LinkedHashMap<>();
+        Map<Integer,Tablet> tablets=new LinkedHashMap<>();
         for(int tabletId:map.keySet())
             tablets.put(tabletId,Gui.runGui(map,tabletId));
         Thread.sleep(100);
-        for(Tablet<Message> tablet:tablets.values())
+        for(Tablet tablet:tablets.values())
             Tablet.startSimulating(tablet);
     }
     public final Integer serialNumber;

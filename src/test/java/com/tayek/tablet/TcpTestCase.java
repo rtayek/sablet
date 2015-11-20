@@ -1,13 +1,12 @@
 package com.tayek.tablet;
-import static com.tayek.io.IO.*;
+import static com.tayek.tablet.io.IO.*;
 import static org.junit.Assert.*;
 import java.io.IOException;
 import java.net.*;
 import java.util.logging.Level;
 import org.junit.*;
 import org.junit.Test;
-import com.tayek.Receiver.DummyReceiver;
-import com.tayek.io.IO.*;
+import com.tayek.tablet.Receiver.DummyReceiver;
 import com.tayek.tablet.model.Message;
 public class TcpTestCase {
     @BeforeClass public static void setUpBeforeClass() throws Exception {
@@ -30,18 +29,18 @@ public class TcpTestCase {
     }
     private boolean sendAndReceiveOneMessage(int service) throws UnknownHostException,IOException,InterruptedException {
         InetAddress inetAddress=InetAddress.getLocalHost();
-        DummyReceiver<Message> receiver=new DummyReceiver<>();
-        Server<Message> server=new Server<>(inetAddress,service,receiver,Message.dummy);
+        DummyReceiver receiver=new DummyReceiver();
+        Server server=new Server(null,inetAddress,service,receiver);
         server.start();
-        Client<Message> client=new Client<>(inetAddress,service,10);
+        Client client=new Client(inetAddress,service,10);
         client.send(Message.dummy,1);
         Thread.sleep(10);
         server.stopServer();
         server.join();
         // p(receiver.t);
-        if(receiver.t==null)
+        if(receiver.message==null)
             p("null");
-        boolean isOk=receiver.t!=null&&Message.dummy.toString().equals(receiver.t.toString());
+        boolean isOk=receiver.message!=null&&Message.dummy.toString().equals(receiver.message.toString());
         return isOk;
     }
 }

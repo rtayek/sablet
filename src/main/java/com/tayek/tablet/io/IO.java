@@ -1,13 +1,14 @@
-package com.tayek.io;
+package com.tayek.tablet.io;
 import java.io.*;
 import java.net.*;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.logging.Logger;
 import com.tayek.*;
-import com.tayek.tablet.Main;
+import com.tayek.tablet.*;
+import com.tayek.tablet.model.Message;
 public class IO {
-    public static class Client<T>implements Sender<T> {
+    public static class Client {
         public Client(InetAddress inetAddress,int service) throws UnknownHostException {
             this(new InetSocketAddress(inetAddress,service),defaultTimeout);
         }
@@ -21,35 +22,19 @@ public class IO {
             this.socketAddress=socketAddress;
             this.timeout=timeout;
         }
-        final ExecutorService pool=Executors.newFixedThreadPool(10);
-        public Future<Boolean> sendFuture(final T t,final int id) {
-            return pool.submit(new Callable<Boolean>() {
-                @Override public Boolean call() throws Exception {
-                    return send(t,id);
-                }
-            });
-        }
-        public boolean sendOnThread(T t,int id) throws InterruptedException,ExecutionException {
-            Future<Boolean> future=sendFuture(t,id); // not used yet
-            // alternative to just using thread
-            while(!future.isDone())
-                ;
-            boolean ok=future.get();
-            return ok;
-        }
-        private boolean send_(T t,int id) {
+        private boolean send_(Message message,int id) {
             Socket socket=connect(id,socketAddress,timeout);
             if(socket!=null) {
                 try {
                     Writer out=new OutputStreamWriter(socket.getOutputStream());
-                    out.write(t.toString()+"\n");
+                    out.write(message.toString()+"\n");
                     out.flush();
                     // out.close();
                     socket.shutdownInput(); // can this be done earlier?
                     socket.shutdownOutput();
                     socket.close();
-                    logger.fine("sent: "+t+" at: "+System.currentTimeMillis());
-                    Main.toaster.toast("sent: "+t+" at: "+System.currentTimeMillis());
+                    logger.fine("sent: "+message+" at: "+System.currentTimeMillis());
+                    Main.toaster.toast("sent: "+message+" at: "+System.currentTimeMillis());
                     return true;
                 } catch(IOException e) {
                     e.printStackTrace();
@@ -60,11 +45,12 @@ public class IO {
         static class Holder {
             Boolean ok=null;
         }
-        public boolean send(final T t,final int id) { // future or async?
+        public boolean send(final Message message,final int id) { // future or
+                                                                  // async?
             final Holder holder=new Holder();
             Thread thread=new Thread(new Runnable() {
                 @Override public void run() {
-                    holder.ok=send_(t,id);
+                    holder.ok=send_(message,id);
                 }
             },"send thread");
             thread.start();
@@ -99,18 +85,19 @@ public class IO {
         public static final Logger staticLogger=Logger.getLogger(Client.class.getName());
     }
     // maybe make server just pass the string along
+    // then what do i do in server to pass info along to group
+    // looks like server should have a tablet, then it all works
     //
-    public static class Server<T extends From<T>>extends Thread {
-        public Server(InetAddress inetAddress,int service,Receiver<T> receiver,T t) throws IOException {
-            this(new InetSocketAddress(inetAddress,service),receiver,t);
+    public static class Server extends Thread {
+        public Server(Tablet tablet,InetAddress inetAddress,int service,Receiver receiver) throws IOException {
+            this(tablet,new InetSocketAddress(inetAddress,service),receiver);
         }
-        public Server(SocketAddress socketAddress,Receiver<T> receiver,T t) throws IOException {
-            // super("server:"+socketAddress);
+        public Server(Tablet tablet,SocketAddress socketAddress,Receiver receiver) throws IOException {
             serverSocket=new ServerSocket();
             logger.info("binding to: "+socketAddress);
             serverSocket.bind(socketAddress);
+            this.tablet=tablet;
             this.receiver=receiver;
-            this.t=t;
         }
         @Override public void run() {
             logger.info("starting server");
@@ -126,10 +113,11 @@ public class IO {
                         synchronized(received) {
                             received++;
                         }
-                        T t=this.t.from(string);
-                        logger.fine("received: "+t+" at: "+System.currentTimeMillis());
-                        Main.toaster.toast("received: "+t+" at: "+System.currentTimeMillis());
-                        if(receiver!=null) receiver.receive(t,socket.getInetAddress());
+                        Message message=Message.staticFrom(string);
+                        logger.fine("received: "+message+" at: "+System.currentTimeMillis());
+                        Main.toaster.toast("received: "+message+" at: "+System.currentTimeMillis());
+                        if(tablet!=null) tablet.group.checkForNewInetAddress(message.tabletId,socket.getInetAddress());
+                        if(receiver!=null) receiver.receive(message);
                     }
                     socket.shutdownInput();
                     socket.shutdownOutput();
@@ -162,9 +150,9 @@ public class IO {
                 return received;
             }
         }
+        final Tablet tablet;
         final ServerSocket serverSocket;
-        final Receiver<T> receiver;
-        final T t; // android can't use java 8 yet.
+        final Receiver receiver;
         boolean isShuttingDown;
         private Integer received=0;
         static Integer service0=10_000;

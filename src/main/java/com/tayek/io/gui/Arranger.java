@@ -4,7 +4,7 @@ import java.awt.event.*;
 import java.util.*;
 import java.util.List;
 import javax.swing.*;
-import static com.tayek.io.IO.*;
+import static com.tayek.tablet.io.IO.*;
 import static java.lang.Math.*;
 // shapes, colors, styles, arrangement
 enum Where {

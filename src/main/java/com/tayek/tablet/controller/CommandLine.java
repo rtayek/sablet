@@ -1,4 +1,5 @@
 package com.tayek.tablet.controller;
+import static com.tayek.tablet.io.IO.*;
 import java.io.*;
 import java.net.*;
 import java.util.*;
@@ -7,10 +8,9 @@ import com.tayek.tablet.Group.Info;
 import com.tayek.tablet.io.gui.swing.*;
 import com.tayek.tablet.model.*;
 import com.tayek.tablet.view.*;
-import static com.tayek.io.IO.*;
 public class CommandLine {
     CommandLine(Group group,int tabletId) {
-        tablet=new Tablet<>(group,tabletId);
+        tablet=new Tablet(group,tabletId);
     }
     private static void usage() {
         p("usage:");
@@ -171,7 +171,7 @@ public class CommandLine {
         p("---");
         new CommandLine(group,id).run();
     }
-    final Tablet<Message> tablet;
+    final Tablet tablet;
     View.CommandLine commandLineView;
     Observer audioObserver;
     OldGui gui;

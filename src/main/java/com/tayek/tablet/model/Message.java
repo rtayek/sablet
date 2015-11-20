@@ -1,13 +1,12 @@
 package com.tayek.tablet.model;
+import static com.tayek.tablet.io.IO.*;
 import java.net.*;
 import java.util.*;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import com.tayek.*;
 import com.tayek.tablet.*;
-import static com.tayek.io.IO.*;
-
-public class Message implements From<Message>,java.io.Serializable {
+public class Message implements java.io.Serializable {
     // put message factory in tablet or client?
     // everything has an id (a small integer) and some have names
     // type|group|tablet|button|data
@@ -53,7 +52,7 @@ public class Message implements From<Message>,java.io.Serializable {
             states[i-1]=state(i);
         return states;
     }
-    @Override public Message from(String string) {
+    public Message from(String string) {
         return staticFrom(string);
     }
     @Override public String toString() {
@@ -90,12 +89,12 @@ public class Message implements From<Message>,java.io.Serializable {
     public static Message error(String string) {
         return new Message(Type.error,0,0,0,string);
     }
-    public static Message process(int groupId,Receiver<Message> receiver,SocketAddress socketAddress,String string) {
+    public static Message process(int groupId,Receiver receiver,SocketAddress socketAddress,String string) {
         Message message=Message.staticFrom(string);
         if(message!=null) {
             if(message.groupId.equals(groupId)) {
                 if(receiver!=null) try {
-                    receiver.receive(message,null);
+                    receiver.receive(message);
                 } catch(Exception e) {
                     throw new RuntimeException(e);
                 }

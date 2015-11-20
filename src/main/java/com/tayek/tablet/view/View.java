@@ -2,7 +2,7 @@ package com.tayek.tablet.view;
 import java.util.*;
 import java.util.logging.Logger;
 import com.tayek.tablet.*;
-import static com.tayek.io.IO.*;
+import static com.tayek.tablet.io.IO.*;
 import com.tayek.tablet.model.Model;
 public interface View extends Observer {
     public class CommandLine implements View {

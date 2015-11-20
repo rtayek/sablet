@@ -1,9 +1,9 @@
 package com.tayek.tablet.view;
 import java.util.Observable;
 import java.util.logging.Logger;
-import com.tayek.io.Audio;
-import com.tayek.io.Audio.Sound;
 import com.tayek.tablet.Main;
+import com.tayek.tablet.io.Audio;
+import com.tayek.tablet.io.Audio.Sound;
 import com.tayek.tablet.model.Model;
 public class AudioObserver implements View {
     public AudioObserver(Model model) {

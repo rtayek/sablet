@@ -1,9 +1,9 @@
-package com.tayek.io;
+package com.tayek.tablet.io;
+import static com.tayek.tablet.io.IO.*;
 import java.io.BufferedInputStream;
 import java.util.logging.Logger;
 import javax.sound.sampled.*;
 import com.tayek.tablet.Main;
-import static com.tayek.io.IO.*;
 public interface Audio {
     enum Sound {
         electronic_chime_kevangc_495939803,glass_ping_go445_1207030150,store_door_chime_mike_koenig_570742973;

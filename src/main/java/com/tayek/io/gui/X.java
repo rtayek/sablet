@@ -1,5 +1,5 @@
 package com.tayek.io.gui;
-import static com.tayek.io.IO.p;
+import static com.tayek.tablet.io.IO.p;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
@@ -57,7 +57,7 @@ public class X extends MainGui {
         void addContent(Container container) {
             for(int i=0;i<rows;i++)
                 for(int j=0;j<columns;j++) {
-                    String string=isRows?(j==0?("Room: "+i):("Action: "+j)):(i==0?("Room: "+j):("Action: "+i));
+                    String string=isRows?(j==0?("Room: "+(i+1)):("Action: "+j)):(i==0?("Room: "+j):("Action: "+i));
                     JButton button=new JButton(string);
                     button.setName(""+index(i,j));
                     button.addActionListener(actionListener);
@@ -106,21 +106,10 @@ public class X extends MainGui {
         super(null);
     }
     @Override public void initialize() {
-        arrangement=new Arrangement(10,5,true);
+        arrangement=new Arrangement(10,2,false);
     }
     @Override public String title() {
         return "Experiment";
-    }
-    void add(Where where) {
-        panel=new JPanel();
-        panel.setLayout(null);
-        arrangement.addContent(panel);
-        p("size: "+getSize());
-        Dimension d=new Dimension(600,300);
-        // get size from ???
-        arrangement.resizeWidgets(d);
-        setPreferredSize(d);
-        add(panel,where.k);
     }
     @Override public void addContent() {
         JMenuBar menuBar=new JMenuBar();
@@ -146,7 +135,15 @@ public class X extends MainGui {
                     panel=null;
                 }
                 arrangement=new Arrangement(arrangement.rows,arrangement.columns,!arrangement.isRows);
-                add(Where.center);
+                panel=new JPanel();
+                panel.setLayout(null);
+                arrangement.addContent(panel);
+                p("size: "+getSize());
+                Dimension d1=new Dimension(600,300);
+                // get size from ???
+                arrangement.resizeWidgets(d1);
+                setPreferredSize(d1);
+                add(panel,Where.center.k);
                 arrangement.resizeWidgets(d);
                 // frame.pack();
                 panel.revalidate();
@@ -158,7 +155,14 @@ public class X extends MainGui {
         setLayout(new BorderLayout());
         for(Where where:Where.values())
             if(where.equals(Where.center)) {
-                add(where);
+                panel=new JPanel();
+                panel.setLayout(null);
+                arrangement.addContent(panel);
+                p("size: "+getSize());
+                Dimension d=new Dimension(600,300);
+                arrangement.resizeWidgets(d);
+                setPreferredSize(d);
+                add(panel,where.k);
             } else add(new JPanel().add(new JButton(where.toString())),where.k);
         frame.getContentPane().addHierarchyBoundsListener(hierarchyBoundsListener);
     }

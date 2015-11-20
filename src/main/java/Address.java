@@ -1,7 +1,7 @@
+import static com.tayek.tablet.io.IO.*;
 import java.io.IOException;
 import java.net.*;
 import java.util.Arrays;
-import static com.tayek.io.IO.*;
 public class Address {
     static void host(String host) throws IOException {
         p(host+" ");

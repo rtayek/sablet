@@ -1,4 +1,5 @@
 package com.tayek.tablet.io.gui.swing;
+import static com.tayek.tablet.io.IO.*;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -34,13 +35,12 @@ import com.tayek.tablet.model.*;
 import com.tayek.tablet.view.*;
 import com.tayek.utilities.*;
 import com.tayek.io.gui.*;
-import static com.tayek.io.IO.*;
 
 // put explicit view back in
 // along with command line view and controller
 // make this use the main gui class
 public class OldGui implements View,ActionListener {
-    public OldGui(Tablet<Message> tablet) {
+    public OldGui(Tablet tablet) {
         this.tablet=tablet;
         this.model=tablet.group.model;
         String prefix="tablet "+tablet.tabletId();
@@ -294,7 +294,7 @@ public class OldGui implements View,ActionListener {
         }
         return n;
     }
-    public static OldGui gui(Tablet<Message> tablet) {
+    public static OldGui gui(Tablet tablet) {
         final OldGui gui=new OldGui(tablet);
         GuiAdapterABC adapter=new GuiAdapterABC(tablet) {
             @Override public void setButtonText(int id,String string) {
@@ -314,7 +314,7 @@ public class OldGui implements View,ActionListener {
         for(int tabletId=1;tabletId<=2;tabletId++) {
             map.put(tabletId,new Group.Info(host,"Tablet 1 on PC"));
             Group group=new Group(1,map);
-            Tablet<Message> tablet=new Tablet<>(group,tabletId);
+            Tablet tablet=new Tablet(group,tabletId);
             tablet.startListening();
             final OldGui gui=gui(tablet);
             tablet.group.model.addObserver(gui);
@@ -323,7 +323,7 @@ public class OldGui implements View,ActionListener {
         }
     }
     final Model model;
-    public Tablet<Message> tablet;
+    public Tablet tablet;
     public final TextView textView;
     /*final*/ GuiAdapterABC adapter;
     final Map<Integer,Color> idToColor=Gui.defaultIdToColor;

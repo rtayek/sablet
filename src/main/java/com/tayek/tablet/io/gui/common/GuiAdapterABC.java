@@ -5,7 +5,7 @@ import com.tayek.tablet.Tablet;
 import com.tayek.tablet.model.*;
 import com.tayek.tablet.view.View;
 public abstract class GuiAdapterABC implements GuiAdapter,View {
-    public GuiAdapterABC(Tablet<Message> tablet) {
+    public GuiAdapterABC(Tablet tablet) {
         this.tablet=tablet;
     }
     @Override public void update(Observable o,Object hint) {
@@ -33,5 +33,5 @@ public abstract class GuiAdapterABC implements GuiAdapter,View {
             ;
         return string;
     }
-    final Tablet<Message> tablet;
+    final Tablet tablet;
 }

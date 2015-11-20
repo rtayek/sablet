@@ -5,6 +5,7 @@ import com.tayek.tablet.Tablet.MenuItem;
 import com.tayek.tablet.io.gui.common.*;
 import com.tayek.tablet.model.*;
 import com.tayek.tablet.view.*;
+import static com.tayek.tablet.io.IO.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.net.*;
@@ -12,9 +13,8 @@ import java.util.*;
 import java.util.Timer;
 import java.util.logging.*;
 import javax.swing.*;
-import static com.tayek.io.IO.*;
 public class Gui extends MainGui implements View,ActionListener {
-    private Gui(Tablet<Message> tablet) {
+    private Gui(Tablet tablet) {
         super();
         this.tablet=tablet;
     }
@@ -204,7 +204,7 @@ public class Gui extends MainGui implements View,ActionListener {
         menuBar.add(menu);
         return menuBar;
     }
-    public static Gui create(Tablet<Message> tablet) { // subclass instead
+    public static Gui create(Tablet tablet) { // subclass instead
         final Gui gui=new Gui(tablet);
         GuiAdapterABC adapter=new GuiAdapterABC(tablet) {
             @Override public void setButtonText(final int id,final String string) {
@@ -229,9 +229,9 @@ public class Gui extends MainGui implements View,ActionListener {
         gui.adapter=adapter;
         return gui;
     }
-    public static Tablet<Message> runGui(Map<Integer,Group.Info> map,int tabletId) {
+    public static Tablet runGui(Map<Integer,Group.Info> map,int tabletId) {
         final Group group=new Group(1,map);
-        final Tablet<Message> tablet=new Tablet<>(group,tabletId);
+        final Tablet tablet=new Tablet(group,tabletId);
         tablet.startListening();
         Gui gui=create(tablet);
         tablet.group.model.addObserver(gui);
@@ -243,15 +243,15 @@ public class Gui extends MainGui implements View,ActionListener {
         Main.log.setLevel(Level.SEVERE);
         Map<Integer,Group.Info> map=new TreeMap<>();
         map=Group.g2;
-        Map<Integer,Tablet<Message>> tablets=new LinkedHashMap<>();
+        Map<Integer,Tablet> tablets=new LinkedHashMap<>();
         for(int tabletId:map.keySet())
             tablets.put(tabletId,Gui.runGui(map,tabletId));
         Thread.sleep(100);
-        if(false) for(Tablet<Message> tablet:tablets.values())
+        if(false) for(Tablet tablet:tablets.values())
             Tablet.startSimulating(tablet);
     }
     private static final long serialVersionUID=1L;
-    Tablet<Message> tablet;
+    Tablet tablet;
     /*final*/ GuiAdapterABC adapter;
     TextView textView;
     final Map<Integer,Color> idToColor=defaultIdToColor;

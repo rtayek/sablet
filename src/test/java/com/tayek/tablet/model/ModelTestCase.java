@@ -12,19 +12,19 @@ public class ModelTestCase {
     @Test public void testSort() {
         model=new Model(5);
         message=new Message(Type.normal,1,1,1,"FTFF");
-        model.receive(message,null);
+        model.receive(message);
         assertTrue(model.state(2));
     }
     @Test public void testJustRight() {
         model=new Model(5);
         message=new Message(Type.normal,1,1,1,"FTFFFFF");
-        model.receive(message,null);
+        model.receive(message);
         assertTrue(model.state(2));
     }
     @Test public void testTooLong() {
         model=new Model(5);
         message=new Message(Type.normal,1,1,1,"FTFFFFFFFFFFFFFFFFFFFFFF");
-        model.receive(message,null);
+        model.receive(message);
         assertTrue(model.state(2));
     }
     Model model;

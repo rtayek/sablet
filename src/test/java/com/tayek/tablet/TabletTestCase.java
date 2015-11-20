@@ -1,7 +1,8 @@
 package com.tayek.tablet;
-import static com.tayek.io.IO.*;
+import static com.tayek.tablet.io.IO.*;
 import static org.junit.Assert.*;
 import java.net.*;
+import java.util.Iterator;
 import java.util.logging.Level;
 import org.junit.*;
 import org.junit.Test;
@@ -15,9 +16,10 @@ public class TabletTestCase {
     @After public void tearDown() throws Exception {}
     @Test public void test() throws InterruptedException,UnknownHostException {
         Group group=new Group(1,Group.g2);
-        Tablet<Message> tablet=new Tablet<>(group,1);
+        Iterator<Integer> i=group.tablets().iterator();
+        Tablet tablet=new Tablet(group,i.next());
         tablet.startListening();
-        Tablet<Message> tablet2=new Tablet<>(group,2);
+        Tablet tablet2=new Tablet(group,i.next());
         tablet2.startListening();
         InetAddress inetAddress=InetAddress.getLocalHost();
         p("-----------");

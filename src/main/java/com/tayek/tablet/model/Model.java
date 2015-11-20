@@ -1,17 +1,17 @@
 package com.tayek.tablet.model;
-import static com.tayek.io.IO.*;
+import static com.tayek.tablet.io.IO.*;
 import java.net.*;
 import java.util.*;
 import java.util.logging.Logger;
-import com.tayek.io.Audio;
-import com.tayek.io.Audio.*;
 import com.sun.imageio.plugins.common.I18N;
 import com.tayek.*;
-import com.tayek.tablet.Main;
+import com.tayek.tablet.*;
+import com.tayek.tablet.io.Audio;
+import com.tayek.tablet.io.Audio.*;
 import com.tayek.tablet.model.Message;
 import com.tayek.tablet.model.Message.*;
 import com.tayek.tablet.view.View;
-public class Model extends Observable implements Receiver<Message>,Cloneable {
+public class Model extends Observable implements Receiver,Cloneable {
     public Model(int buttons) {
         this(buttons,++ids);
     }
@@ -46,14 +46,9 @@ public class Model extends Observable implements Receiver<Message>,Cloneable {
             return idToLastOnFrom.get(id);
         }
     }
-    @Override public void receive(Message message,Object extra) {
+    @Override public void receive(Message message) {
         if(message!=null) {
             logger.fine("received message: "+message);
-            if(extra!=null&&extra instanceof InetAddress) { // bad place for this!
-                p("from inet address: "+extra);
-                //InetAddress inetAddress=InetAddress.
-                // ((SocketAddress)extra).
-            }
             switch(message.type) {
                 case normal: // assume that the button id is the one he pushed.
                     // sync this?
@@ -126,11 +121,11 @@ public class Model extends Observable implements Receiver<Message>,Cloneable {
         Model model=new Model(7);
         p(model.toString());
         Message message=new Message(Type.normal,1,1,1,"FFTFFF");
-        model.receive(message,null);
+        model.receive(message);
         message=new Message(Type.normal,1,1,1,"FFTFFFF");
-        model.receive(message,null);
+        model.receive(message);
         message=new Message(Type.normal,1,1,1,"FFTFFFFF");
-        model.receive(message,null);
+        model.receive(message);
         p(model.toString());
     }
     public Object clone() {

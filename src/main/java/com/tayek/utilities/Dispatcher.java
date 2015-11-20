@@ -1,10 +1,10 @@
 package com.tayek.utilities;
+import static com.tayek.tablet.io.IO.*;
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.TreeMap;
-import static com.tayek.io.IO.*;
 class Main {
     public static void main(String[] arguments) {
         System.out.println("you just ran the default main class for the dispatcher.");

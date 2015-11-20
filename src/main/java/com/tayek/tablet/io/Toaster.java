@@ -1,4 +1,4 @@
-package com.tayek.io;
+package com.tayek.tablet.io;
 import java.util.logging.Logger;
 public interface Toaster {
     void toast(String string);

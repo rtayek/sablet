@@ -1,33 +1,31 @@
 package com.tayek.tablet;
-import static com.tayek.io.IO.*;
+import static com.tayek.tablet.io.IO.*;
 import java.io.IOException;
 import java.net.*;
 import java.util.*;
 import java.util.logging.Logger;
-import com.tayek.*;
-import com.tayek.io.IO.*;
 import com.tayek.tablet.model.*;
 import com.tayek.utilities.Utility;
 // http://www.instructables.com/id/How-To-Setup-Eclipse-for-Android-App-Development/step9/Access-ADT-Plugin-Preferences/
 // add a method or a class to exercise random presses!
 // maybe we have no tabletid
 // we have an inet address and port or maybe an inetSocketAddresss.
-public class Tablet<T>implements Sender<T> {
+public class Tablet  {
     public enum MenuItem {
         Reset,Ping,Disconnect,Connect,Log,Sound,Simulate;
-        public void doItem(Tablet<Message> tablet) {
+        public void doItem(Tablet tablet) {
             doItem(this,tablet);
         }
         public static boolean isIem(int ordinal) {
             return 0<=ordinal&&ordinal<values().length?true:false;
         }
         // called from android
-        public static void doItem(int ordinal,Tablet<Message> tablet) {
+        public static void doItem(int ordinal,Tablet tablet) {
             if(tablet!=null) if(0<=ordinal&&ordinal<values().length) values()[ordinal].doItem(tablet);
             else p(ordinal+" is invalid ordinal for!");
             else p("tablet is null in do item!");
         }
-        public static void doItem(MenuItem tabletMenuItem,Tablet<Message> tablet) {
+        public static void doItem(MenuItem tabletMenuItem,Tablet tablet) {
             // maybe move
             switch(tabletMenuItem) {
                 case Reset:
@@ -56,13 +54,11 @@ public class Tablet<T>implements Sender<T> {
         }
     }
     public Tablet(Group group,int tabletId) {
-        this(group,tabletId,null);
-        setName(group.info(tabletId).name);
-    }
-    public Tablet(Group group,int tabletId,String name) {
         this.group=group;
         this.tabletId=tabletId;
-        setName(name);
+        if(!group.tablets().contains(tabletId))
+            logger.severe("tablet: "+tabletId+" is not a member of group: "+group);
+        setName(group.info(tabletId).name);
     }
     public boolean startListening() {
         try {
@@ -72,7 +68,7 @@ public class Tablet<T>implements Sender<T> {
             // he should send an "add me" or ask for
             // visiting privileges.
             SocketAddress socketAddress=new InetSocketAddress(host,Server.port(tabletId()));
-            server=new Server<Message>(socketAddress,group.model,Message.dummy);
+            server=new Server(this,socketAddress,group.model);
             server.start();
             return true;
         } catch(BindException e) {
@@ -85,7 +81,7 @@ public class Tablet<T>implements Sender<T> {
     public void stopListening() {
         server.stopServer();
     }
-    @Override public boolean send(final T t,int unused) {
+    public boolean send(final Message message,int unused) {
         // the client send() starts a thread and waits,
         // so let's do this on a thread also.
         Thread thread=new Thread(new Runnable() {
@@ -97,8 +93,8 @@ public class Tablet<T>implements Sender<T> {
                         try {
                             inetAddress=InetAddress.getByName(host);
                             logger.info("host: "+host+":"+Server.port(destinationTabletId));
-                            Client<T> client=new Client<>(inetAddress,Server.port(destinationTabletId));
-                            if(client.send(t,tabletId())) logger.fine("send worked");
+                            Client client=new Client(inetAddress,Server.port(destinationTabletId));
+                            if(client.send(message,tabletId())) logger.fine("send worked");
                         } catch(UnknownHostException e) {
                             e.printStackTrace();
                         }
@@ -121,7 +117,7 @@ public class Tablet<T>implements Sender<T> {
     @Override public String toString() {
         return name+" "+group.model;
     }
-    public static void startSimulating(final Tablet<Message> tablet) {
+    public static void startSimulating(final Tablet tablet) {
         // add code to start and stop the simulator
         if(tablet.timer!=null) tablet.stopListening();
         ArrayList<Integer> ids=new ArrayList<>(tablet.group.tablets());
@@ -139,7 +135,7 @@ public class Tablet<T>implements Sender<T> {
                     Message message=Group.randomToggle(tablet);
                     p(""+(System.currentTimeMillis()-t0)+" "+tablet+" "+message);
                     tablet.send(message,0);
-                    tablet.group.model.receive(message,null);
+                    tablet.group.model.receive(message);
                 }
             },1_000+ids.indexOf(tablet.tabletId())*dt,dt*tablet.group.tablets().size());
         }
@@ -157,6 +153,6 @@ public class Tablet<T>implements Sender<T> {
     private String name;
     public final Group group;
     private final Integer tabletId;
-    public Server<Message> server;
+    public Server server;
     public final Logger logger=Logger.getLogger(getClass().getName());
 }

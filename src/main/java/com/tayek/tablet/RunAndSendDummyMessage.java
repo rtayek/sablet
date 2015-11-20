@@ -1,5 +1,5 @@
 package com.tayek.tablet;
-import static com.tayek.io.IO.*;
+import static com.tayek.tablet.io.IO.*;
 import java.util.*;
 import java.util.logging.Level;
 import com.tayek.tablet.model.Message;
@@ -10,19 +10,19 @@ public class RunAndSendDummyMessage {
         for(int i=1;i<=20;i++)
             map.put(i,new Group.Info("192.168.1.2","Tablet: "+i+" om PC"));
         p(map.toString());
-        Map<Integer,Tablet<Message>> tablets=new TreeMap<>();
+        Map<Integer,Tablet> tablets=new TreeMap<>();
         for(int tabletId:map.keySet()) {
-            Tablet<Message> tablet=new Tablet<>(new Group(1,map),tabletId);
+            Tablet tablet=new Tablet(new Group(1,map),tabletId);
             tablets.put(tabletId,tablet);
         }
         p(tablets.toString());
         p("start");
-        for(Tablet<Message> tablet:tablets.values()) {
+        for(Tablet tablet:tablets.values()) {
             tablet.startListening();
             Thread.yield();
         }
         p("broadcast");
-        for(Tablet<Message> tablet:tablets.values()) {
+        for(Tablet tablet:tablets.values()) {
             tablet.send(Message.dummy,0);
             Thread.yield();
         }
@@ -30,18 +30,18 @@ public class RunAndSendDummyMessage {
         Thread.sleep(2*map.size()*map.size());
         p("awake");
         p("received");
-        if(false) for(Tablet<Message> tablet:tablets.values())
+        if(false) for(Tablet tablet:tablets.values())
             p(tablet.server.received().toString());
         p("check");
-        for(Tablet<Message> tablet:tablets.values()) {
+        for(Tablet tablet:tablets.values()) {
             if(tablet.server.received()!=map.size()-1) p(tablet+" received: "+tablet.server.received()+" instead of "+(map.size()-1));
             tablet.stopListening();
         }
-        for(Tablet<Message> tablet:tablets.values()) {
+        for(Tablet tablet:tablets.values()) {
             tablet.server.join();
         }
         p("joined");
         Thread.sleep(0);
-        com.tayek.io.IO.printThreads();
+        com.tayek.tablet.io.IO.printThreads();
     }
 }
